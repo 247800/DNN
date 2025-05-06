@@ -26,7 +26,6 @@ def get_noise(t, S_tmin=1e-5, S_tmax=12, S_churn=None, idx=0):
         gamma_i = min(S_churn / N, np.sqrt(1) - 1)
     return gamma_i
 
-
 def load_checkpoint(path, device, model):
     state_dict = torch.load(path, map_location=device, weights_only=False)
     try:
@@ -35,3 +34,26 @@ def load_checkpoint(path, device, model):
         it = 0
     print(f"loading checkpoint {it}")
     return load_state_dict(state_dict, ema=model)
+
+def get_likelihood_score(y, x_den, x, t, threshold):
+    torch.cuda.empty_cache()
+    y_hat = torch.clip(x_den, -threshold, threshold)
+    rec = rec_loss(y, y_hat) - chyba
+    loss = rec
+    loss.backward(retain_graph=False)
+    rec_grads = x.grad
+
+    if self.args.tester.posterior_sampling.normalization_type == "grad_norm":
+        normguide = torch.norm(rec_grads) / ((x.shape[0] * x.shape[-1]) ** 0.5)
+        zeta = self.zeta / (normguide + 1e-8)
+        return -zeta * rec_grads / t, rec
+
+    elif self.args.tester.posterior_sampling.normalization_type == "loss_norm":
+        normguide = rec / ((x.shape[0] * x.shape[-1]) ** 0.5)
+        zeta = self.zeta / (normguide + 1e-8)
+        return -zeta * rec_grads / t, rec
+
+    else:
+        raise NotImplementedError(
+            f"normalization type {self.args.tester.posterior_sampling.normalization_type} not implemented"
+        )

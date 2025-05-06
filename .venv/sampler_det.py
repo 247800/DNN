@@ -26,6 +26,8 @@ from omegaconf.nodes import AnyNode
 from scipy.io import wavfile
 from scipy.io.wavfile import write
 from utils.sampling_utils import load_checkpoint
+from utils.sampling_utils import get_time_schedule
+from utils.sampling_utils import get_likelihood_score
 from utils import callback as cb
 
 torch.serialization.add_safe_globals([
@@ -153,9 +155,9 @@ dataloader = DataLoader(dataset, batch_size=1, shuffle=False)
 # loss_func = auraloss.freq.MultiResolutionSTFTLoss()
 
 learning_rate = 0.001
-n_steps = 100
 S_noise = 1
-t = s_utils.get_time_schedule()
+n_steps= 50
+t= get_time_schedule(sigma_min=1e-5, sigma_max=1, T=n_steps, rho=10)
 
 model.eval()
 model.to(device)
@@ -169,30 +171,28 @@ x_i = torch.randn(input_sig.shape, device=device)
 # x_0 = x + torch.randn(x.shape, device=device)
 
 for step in range(n_steps):
-    with torch.no_grad():
-        gamma = s_utils.get_noise(t=t, idx=step)
-        t_hat = t[step] + t[step] * gamma
-        t_hat = t_hat.to(device)
-        noise = torch.randn(x_i.shape, device=device)
-        x_hat = x_i + torch.sqrt(t_hat.clone().detach() ** 2 - t[step] ** 2) * noise
-        D_theta = model(x_hat, sigma=t[step])
-        d = (D_theta - x_hat) / t_hat
-        x_i = x_hat + (t[step + 1] - t_hat) * d
-        # print(x_i.size, x_hat.size)
-        # print(x_i.shape, x_hat.shape)
-        # print("t",t[step])
+   with torch.no_grad():
+       x_hat = model(x_i, t[step])  # Get denoised estimate
+       score_unc = (x_i - x_hat) / t[step]  # Calculate score
+       threshold = 0.05
+       y = torch.clip(input_sig, -threshold, threshold)
+       # likelihood_score = get_likelihood_score(y=y, x_den=x_hat, x=x_i, t=t, threshold=threshold)
+       # d = score_unc + likelihood_score
+       d = (x_i - x_hat) / t[step]
+       x_i = x_i + (t[step + 1] - t[step]) * d  # Euler step
 
-        if step % 5 == 0:
-            cb.export_audio(x_hat, sample_rate, step)
-            cb.export_waveform(x_hat, step)
-            # cb.export_spectrogram(x_hat, sample_rate)
+       if step % 5 == 0:
+           cb.export_audio(x_hat, sample_rate, step)
+           cb.export_waveform(x_hat, step)
+           # cb.export_spectrogram(x_hat, sample_rate)
 
-        # loss = loss_fn(x=x, x_hat=x_i).to(device)
-        # loss = loss_fn(x=x.squeeze(1), x_hat=x_i.squeeze(1)).to(device)
+       print(f"Step: {step + 1}")
+       print("dt", t[step + 1] - t[step],"t",t[step].numpy())
+       print("NORM", torch.norm(x_i - x_hat).item())
+       # wandb.log({"loss": loss})
+       # print("Loss device:", loss.device)
 
-        print(f"Step: {step + 1}")
-        # print(f"Step: [{step + 1}/{n_steps}], Loss: {loss}")
-        # wandb.log({"loss": loss})
-        # print("Loss device:", loss.device)
+torchaudio.save("x_den.wav", x_i.squeeze(0).cpu(), sample_rate)
+
 
 # wandb.finish()
