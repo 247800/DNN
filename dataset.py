@@ -29,7 +29,6 @@ class AudioDataset(Dataset):
         ds_idx = int(len(files) * (ds_percent / 100))
 
         if self.train:
-            # z nejakyho duvodu ten muj model nepobira vic jak 2 soubory???????
             # self.files = files[:ds_idx]  # First part of the dataset for training
             self.files = files[:1]  # First part of the dataset for training
         else:
