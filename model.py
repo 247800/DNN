@@ -1,8 +1,6 @@
 import torch
 from torch import nn
 
-# input_channels pro nn.Conv2d prepsano z 2 na 1, totez u transp conv2d
-
 class Denoiser(nn.Module):
     def __init__(self):
         super(Denoiser, self).__init__()
