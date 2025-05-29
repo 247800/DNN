@@ -82,4 +82,3 @@ for step in range(n_steps):
            cb.export_spectrogram(x_den, sample_rate, step)
 
 torchaudio.save("x_i.wav", x_i.squeeze(0).cpu(), sample_rate)
-torchaudio.save("x_den.wav", x_den.squeeze(0).cpu(), sample_rate)
