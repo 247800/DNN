@@ -1,4 +1,5 @@
 import torchaudio
+import numpy as np
 from torch.utils.data import Dataset, DataLoader
 from dataset import AudioDataset
 import hydra
@@ -40,45 +41,50 @@ sample_rate = 44100
 dataset = AudioDataset(path, train=False, seg_len=262144)
 dataloader = DataLoader(dataset, batch_size=1, shuffle=False)
 
-S_noise = 1
-n_steps = 101
+# S_noise = 1
+n_steps = 100
 sigma_min = 1e-6
 sigma_max = 10
 rho = 7
 
 t = get_time_schedule(sigma_min=sigma_min, sigma_max=sigma_max, T=n_steps, rho=rho)
-cb.plot_time_schedule(t)
+# cb.plot_time_schedule(t)
 
 model.eval()
 model.to(device)
 
-input_sig = next(iter(dataloader))
-torchaudio.save("x_inp.wav", input_sig.squeeze(0).cpu(), sample_rate)
+n_sigs = 10
+# thresholds = np.arange(0.05, 0.15, 0.05)
+thresholds = np.arange(0.05, 0.51, 0.05)
 
-x_i = torch.randn(input_sig.shape, device=device) * sigma_max
-threshold = 0.05
-y = torch.clip(input_sig, -threshold, threshold).to(device).requires_grad_(True)
+for i in range(n_sigs):
+    for threshold in thresholds:
+        print(f"Input: {i+1}, Threshold: {threshold}")
+        input_sig = next(iter(dataloader))
+        torchaudio.save("x_inp{i+1}.wav", input_sig.squeeze(0).cpu(), sample_rate)
 
-for step in range(n_steps):
-       c_skip, c_out, c_in, c_noise = get_preconditioning(t[step])
-       x_i = x_i.requires_grad_()
-       x_den = c_skip * x_i + c_out * model((c_in * x_i).to(torch.float32), c_noise.to(torch.float32)).to(x_i.dtype)  # Get tweedie
-       x_den = model.CQTransform.apply_hpf_DC(x_den)
-       score_unc = (x_den - x_i) / (t[step]**2)  # Calculate score
-       likelihood_score, _ = get_likelihood_score(y=y, x_den=x_den, x=x_i, t=t[step], threshold=threshold)
-       d = score_unc + likelihood_score
-       ode_integrant = d * -t[step]
-       x_i = x_i + (t[step + 1] - t[step]) * ode_integrant # Euler step
+        x_i = torch.randn(input_sig.shape, device=device) * sigma_max
+        y = torch.clip(input_sig, -threshold, threshold).to(device).requires_grad_(True)
 
-       # Detach from computational graph
-       x_i = x_i.detach()
-       x_den  = x_den.detach()
+        for step in range(n_steps):
+               c_skip, c_out, c_in, c_noise = get_preconditioning(t[step])
+               x_i = x_i.requires_grad_()
+               x_den = c_skip * x_i + c_out * model((c_in * x_i).to(torch.float32), c_noise.to(torch.float32)).to(x_i.dtype)  # Get tweedie
+               x_den = model.CQTransform.apply_hpf_DC(x_den)
+               score_unc = (x_den - x_i) / (t[step]**2)  # Calculate score
+               likelihood_score, _ = get_likelihood_score(y=y, x_den=x_den, x=x_i, t=t[step], threshold=threshold)
+               d = score_unc + likelihood_score
+               ode_integrant = d * -t[step]
+               x_i = x_i + (t[step+1] - t[step]) * ode_integrant # Euler step
 
-       if step % 5 == 0:
-           print(f"Step: {step + 1}, dt {t[step + 1] - t[step]},"
-                 f"t, {t[step].numpy()}, norm: {torch.norm(x_i - x_den).item()}")
-           cb.export_audio(x_hat=x_den, sample_rate=sample_rate, step=step, dtype="float32")
-           cb.export_waveform(x_den, sample_rate, step)
-           cb.export_spectrogram(x_den, sample_rate, step)
+               # Detach from computational graph
+               x_i = x_i.detach()
+               x_den  = x_den.detach()
 
-torchaudio.save("x_i.wav", x_i.squeeze(0).cpu(), sample_rate)
+               print(f"Step: {step+1}, dt {t[step+1] - t[step]},"
+                     f"t, {t[step].numpy()}, norm: {torch.norm(x_i - x_den).item()}")
+
+        cb.export_audio(x_hat=x_den, sample_rate=sample_rate, i=i, threshold=threshold)
+        cb.export_waveform(x_hat=x_den, sample_rate=sample_rate, i=i, threshold=threshold)
+        cb.export_spectrogram(x_hat=x_den, sample_rate=sample_rate, i=i, threshold=threshold)
+        torchaudio.save(f"x_out_{i+1}_thr{threshold}.wav", x_i.squeeze(0).cpu(), sample_rate)
