@@ -15,18 +15,6 @@ def plot_time_schedule(t):
     plt.savefig(f"time_schedule.pdf", format='pdf')
     plt.show()
 
-# def prepare_folders():
-    # if not os.path.exists("exp_wf"):
-    #     os.makedirs("exp_wf")
-    # if not os.path.exists("exp_spec"):
-    #     os.makedirs("exp_spec")
-    # if not os.path.exists("exp_wav"):
-    #     os.makedirs("exp_wav")
-    # if not os.path.exists("exp_img"):
-    #     os.makedirs("exp_img")
-    # if not os.path.exists("exp_loss"):
-    #     os.makedirs("exp_loss")
-
 def wandb_run(learning_rate, n_steps):
     wandb.login()
     wandb.init(
@@ -74,9 +62,9 @@ def export_spectrogram(x_hat, sample_rate, step, output_dir="exp_spec"):
     plt.savefig(f"exp_spec/spec_{step+1}.pdf", bbox_inches='tight')
     plt.show()
 
-def export_audio(x, sample_rate, step, output_dir="exp_wav", dtype="float32"):
+def export_audio(x_hat, sample_rate, step, output_dir="exp_wav", dtype="float32"):
     os.makedirs(output_dir, exist_ok=True)
-    x_out = x.squeeze().detach().cpu().numpy()
+    x_out = x_hat.squeeze().detach().cpu().numpy()
     x_out = x_out / np.max(np.abs(x_out))
 
     if dtype == "int16":
