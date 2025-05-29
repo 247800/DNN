@@ -39,7 +39,7 @@ weights = load_checkpoint(path="checkpoints/guitar_Career_44k_6s-325000.pt", dev
 path = "IDMT-SMT-GUITAR"
 sample_rate = 44100
 dataset = AudioDataset(path, train=False, seg_len=262144)
-dataloader = DataLoader(dataset, batch_size=1, shuffle=False)
+dataloader = DataLoader(dataset, batch_size=10, shuffle=False)
 
 # S_noise = 1
 n_steps = 100
