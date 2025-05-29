@@ -34,16 +34,18 @@ def load_checkpoint(path, device, model):
 def get_likelihood_score(y, x_den, x, t, threshold):
     torch.cuda.empty_cache()
     y_hat = torch.clip(x_den, -threshold, threshold)
-    print(y.requires_grad)
-    print(y_hat.requires_grad)
     rec = rec_loss(y.squeeze(1), y_hat.squeeze(1))
     loss = rec
     loss.backward(retain_graph=False)
-    rec_grads = x_den.grad
-    print(torch.norm(rec_grads))
+    rec_grads = x.grad
     normguide = torch.norm(rec_grads) / ((x.shape[0] * x.shape[-1]) ** 0.5)
     zeta = 0.35
     zeta_hat = zeta / (normguide + 1e-8)
-    return -zeta_hat * rec_grads / t, rec
+    return (-zeta_hat * rec_grads / t).detach(), rec
 
-
+def get_preconditioning(sigma, sigma_data=0.063):
+    c_skip = sigma_data**2 * (sigma**2 + sigma_data**2)**-1
+    c_out = sigma*sigma_data * (sigma**2 + sigma_data**2)**(-0.5)
+    c_in = (sigma_data**2 + sigma**2)**(-0.5)
+    c_noise = (1/4)*torch.log(sigma)
+    return c_skip, c_out, c_in, c_noise
