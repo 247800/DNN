@@ -67,11 +67,10 @@ for step in range(n_steps):
        score_unc = (x_den - x_i) / (t[step]**2)  # Calculate score
        likelihood_score, _ = get_likelihood_score(y=y, x_den=x_den, x=x_i, t=t[step], threshold=threshold)
        d = score_unc + likelihood_score
-       # d = score_unc
        ode_integrant = d * -t[step]
        x_i = x_i + (t[step + 1] - t[step]) * ode_integrant # Euler step
 
-       # detach from computational graph
+       # Detach from computational graph
        x_i = x_i.detach()
        x_den  = x_den.detach()
 
@@ -79,9 +78,7 @@ for step in range(n_steps):
            print(f"Step: {step + 1}, dt {t[step + 1] - t[step]},"
                  f"t, {t[step].numpy()}, norm: {torch.norm(x_i - x_den).item()}")
            cb.export_audio(x_hat=x_den, sample_rate=sample_rate, step=step, dtype="float32")
-           # cb.export_audio(x_hat=x_i, sample_rate=sample_rate, step=step, output_dir="exp_x_i", dtype="float32")
            cb.export_waveform(x_den, sample_rate, step)
-           # cb.export_waveform(x_i, sample_rate, step, output_dir="exp_wf_x_i")
            cb.export_spectrogram(x_den, sample_rate, step)
 
 torchaudio.save("x_i.wav", x_i.squeeze(0).cpu(), sample_rate)
