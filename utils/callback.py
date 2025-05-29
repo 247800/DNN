@@ -25,7 +25,7 @@ def wandb_run(learning_rate, n_steps):
         },
     )
 
-def export_waveform(x_hat, sample_rate, step, output_dir="exp_wf"):
+def export_waveform(x_hat, sample_rate, i, threshold, output_dir="exp_wf"):
     os.makedirs(output_dir, exist_ok=True)
     x_out = x_hat.squeeze().detach().cpu().numpy()
     time_axis = np.linspace(0, len(x_out) / sample_rate, num=len(x_out))
@@ -35,12 +35,12 @@ def export_waveform(x_hat, sample_rate, step, output_dir="exp_wf"):
     plt.plot(time_axis,x_out)
     plt.xlabel("Čas [s]")
     plt.ylabel("Amplituda [-]")
-    plt.title(f"Waveform {step + 1}")
-    output_path = os.path.join(output_dir, f"wf_{step + 1}.pdf")
+    plt.title(f"Signál {i+1}")
+    output_path = os.path.join(output_dir, f"wf_{i+1}_thres{threshold}.pdf")
     plt.savefig(output_path, format='pdf')
     plt.show()
 
-def export_spectrogram(x_hat, sample_rate, step, output_dir="exp_spec"):
+def export_spectrogram(x_hat, sample_rate, i, threshold, output_dir="exp_spec"):
     os.makedirs(output_dir, exist_ok=True)
     x_out = x_hat.detach().cpu().numpy()
     x_out_tensor = torch.from_numpy(x_out)
@@ -58,26 +58,28 @@ def export_spectrogram(x_hat, sample_rate, step, output_dir="exp_spec"):
     plt.colorbar(format="%+2.0f dB")
     plt.xlabel("Čas [s]")
     plt.ylabel("Frekvence [Hz]")
-    plt.title(f"Spektrogram {step+1}")
-    plt.savefig(f"exp_spec/spec_{step+1}.pdf", bbox_inches='tight')
+    plt.title(f"Spektrogram {i+1}, Threshold {threshold}")
+    plt.savefig(f"exp_spec/spec_{i+1}_thres{threshold}.pdf", bbox_inches='tight')
     plt.show()
 
-def export_audio(x_hat, sample_rate, step, output_dir="exp_wav", dtype="float32"):
+def export_audio(x_hat, sample_rate, i, threshold, output_dir="exp_wav", dtype="float32"):
     os.makedirs(output_dir, exist_ok=True)
     x_out = x_hat.squeeze().detach().cpu().numpy()
     x_out = x_out / np.max(np.abs(x_out))
+    x_out = x_out.astype(np.float32)
 
-    if dtype == "int16":
-        x_out = (x_out * 32767).astype(np.int16)
-        subtype = "PCM_16"
-    elif dtype == "float32":
-        x_out = x_out.astype(np.float32)
-        subtype = "FLOAT"
-    else:
-        raise ValueError(f"Unsupported format: {dtype}. Use 'float32' or 'int16'.")
+    # if dtype == "int16":
+    #     x_out = (x_out * 32767).astype(np.int16)
+    #     subtype = "PCM_16"
+    # elif dtype == "float32":
+    #     x_out = x_out.astype(np.float32)
+    #     subtype = "FLOAT"
+    # else:
+    #     raise ValueError(f"Unsupported format: {dtype}. Use 'float32' or 'int16'.")
 
-    filename = os.path.join(output_dir, f"export_{step + 1}.wav")
-    sf.write(filename, x_out, sample_rate, subtype=subtype)
+    filename = os.path.join(output_dir, f"export_{i+1}_thres{threshold}.wav")
+    # sf.write(filename, x_out, sample_rate, subtype=subtype)
+    sf.write(filename, x_out, sample_rate)
     print(f"Audio file exported: {filename} ({dtype})")
 
 
