@@ -56,18 +56,7 @@ def export_audio(x_hat, sample_rate, i, threshold, output_dir="exp_wav", dtype="
     x_out = x_hat.squeeze().detach().cpu().numpy()
     x_out = x_out / np.max(np.abs(x_out))
     x_out = x_out.astype(np.float32)
-
-    # if dtype == "int16":
-    #     x_out = (x_out * 32767).astype(np.int16)
-    #     subtype = "PCM_16"
-    # elif dtype == "float32":
-    #     x_out = x_out.astype(np.float32)
-    #     subtype = "FLOAT"
-    # else:
-    #     raise ValueError(f"Unsupported format: {dtype}. Use 'float32' or 'int16'.")
-
     filename = os.path.join(output_dir, f"export_{i+1}_thres{threshold}.wav")
-    # sf.write(filename, x_out, sample_rate, subtype=subtype)
     sf.write(filename, x_out, sample_rate)
     print(f"Audio file exported: {filename} ({dtype})")
 
