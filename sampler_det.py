@@ -54,7 +54,6 @@ model.eval()
 model.to(device)
 
 n_sigs = 10
-# thresholds = np.arange(0.05, 0.15, 0.05)
 thresholds = np.arange(0.05, 0.51, 0.05)
 
 for i in range(n_sigs):
