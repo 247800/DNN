@@ -25,7 +25,9 @@ It is also necessary to download the model, weights and checkpoint from the [NLD
 To get checkpoint, download [`checkpoints.zip`](https://github.com/michalsvento/NLDistortionDiff/releases/tag/checkpoints). 
 The checkpoint used for this code was `guitar_Career_44k_6s-325000.pt`
 
-Before running this code, make sure to set the path to the weights, checkpoints and dataset in the `sampler_det.py`. It is recommended to include the `cqt_nsgt_pytorch` folder into the `utils` directory of this project. The dataset used for this code was [IDMT-SMT-Guitar](https://www.idmt.fraunhofer.de/en/publications/datasets/guitar.html).
+It is recommended to include the `cqt_nsgt_pytorch` folder into the `utils` directory of this project. 
+
+Before running this code, make sure to set the path to the weights, checkpoints and dataset in the `sampler_det.py`. The dataset used for this code was [IDMT-SMT-Guitar](https://www.idmt.fraunhofer.de/en/publications/datasets/guitar.html).
 
 ## Inference
 For inference run:
