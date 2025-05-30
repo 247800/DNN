@@ -1,11 +1,9 @@
-# Diffusion neural networks for repairing corrupted audio signals
+# Diffusion model neural networks for restoration of damaged audio
 
 Welcome to the repositary of my bachelor thesis. Here you can find the code for a deterministic diffusion posterior sampler I created for the 
 [NLDistortionDiff](https://github.com/michalsvento/NLDistortionDiff) model.
 
-> PODESTÁTOVÁ, Věra. Difuzní neuronové sítě pro opravu poškozených audio signálů.
-Bakalářská práce. Brno: Vysoké učení technické v Brně, Fakulta elektrotechniky a komu-
-nikačních technologií, Ústav telekomunikací, 2025. Vedoucí práce: Ing. Michal Švento
+> PODESTÁTOVÁ, Věra. Diffusion model neural networks for restoration of damaged audio. Online, bachelor's Thesis. Michal ŠVENTO (supervisor). Brno: Brno University of Technology, Faculty of Electrical Engineering and Communication, 2025. Available at: https://www.vut.cz/en/students/final-thesis/detail/167399.
 
 ## Setup
 
