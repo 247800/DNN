@@ -15,16 +15,6 @@ def plot_time_schedule(t):
     plt.savefig(f"time_schedule.pdf", format='pdf')
     plt.show()
 
-def wandb_run(learning_rate, n_steps):
-    wandb.login()
-    wandb.init(
-        project="dnn-sampler",
-        config={
-            "learning_rate": learning_rate,
-            "steps": n_steps,
-        },
-    )
-
 def export_waveform(x_hat, sample_rate, i, threshold, output_dir="exp_wf"):
     os.makedirs(output_dir, exist_ok=True)
     x_out = x_hat.squeeze().detach().cpu().numpy()
