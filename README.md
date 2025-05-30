@@ -20,7 +20,7 @@ It is also necessary to download the model, weights and checkpoint from the [NLD
 
 - model: [`unet_octCQT.py`](https://github.com/michalsvento/NLDistortionDiff/blob/6241780586e1ebd1ec6f67e03651c3976060aa6e/networks/unet_octCQT.py)
 - utils: [`cqt_nsgt_pytorch`](https://github.com/michalsvento/NLDistortionDiff/tree/6241780586e1ebd1ec6f67e03651c3976060aa6e/utils/cqt_nsgt_pytorch)
-- weights: [`cqtdiff%2B_44k_32binsoct.yaml`](https://github.com/michalsvento/NLDistortionDiff/blob/6241780586e1ebd1ec6f67e03651c3976060aa6e/conf/network/cqtdiff%2B_44k_32binsoct.yaml)
+- weights: [`cqtdiff+_44k_32binsoct.yaml`](https://github.com/michalsvento/NLDistortionDiff/blob/6241780586e1ebd1ec6f67e03651c3976060aa6e/conf/network/cqtdiff%2B_44k_32binsoct.yaml)
 
 To get checkpoint, download [`checkpoints.zip`](https://github.com/michalsvento/NLDistortionDiff/releases/tag/checkpoints). 
 The checkpoint used for this code was `guitar_Career_44k_6s-325000.pt`
