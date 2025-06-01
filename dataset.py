@@ -60,6 +60,6 @@ class AudioDataset(Dataset):
 
 if __name__ == "__main__":
     dataset = AudioDataset(directory="./IDMT-SMT-GUITAR/", sr=44100, seg_len=262144)
-    dataset.print_params()
+    dataset.print_params() # Print dataset parameters
     dataloader = DataLoader(dataset, batch_size=4)
     print(next(iter(dataloader)).shape)
