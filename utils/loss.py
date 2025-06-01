@@ -1,18 +1,5 @@
 import torch
 
-def get_frequency_weighting(freqs, freq_weighting=None):
-    if freq_weighting is None:
-        return torch.ones_like(freqs).to(freqs.device)
-    elif freq_weighting == "sqrt":
-        return torch.sqrt(freqs)
-    elif freq_weighting == "exp":
-        freqs = torch.exp(freqs)
-        return freqs - freqs[:, 0, :].unsqueeze(-2)
-    elif freq_weighting == "log":
-        return torch.log(1 + freqs)
-    elif freq_weighting == "linear":
-        return freqs
-
 def l2_comp_stft_sum(x, x_hat):
     win_length = 1024
     fft_size = 2048
