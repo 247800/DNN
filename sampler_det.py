@@ -41,9 +41,8 @@ sample_rate = 44100
 dataset = AudioDataset(path, train=False, seg_len=262144)
 dataloader = DataLoader(dataset, batch_size=10, shuffle=False)
 
-# S_noise = 1
-n_steps = 100
-sigma_min = 1e-6
+n_steps = 100   # T number of discretized steps
+sigma_min = 1e-6  
 sigma_max = 10
 rho = 7
 
@@ -53,7 +52,7 @@ t = get_time_schedule(sigma_min=sigma_min, sigma_max=sigma_max, T=n_steps, rho=r
 model.eval()
 model.to(device)
 
-n_sigs = 10
+n_sigs = 10 
 thresholds = np.arange(0.05, 0.51, 0.05)
 
 for i in range(n_sigs):
@@ -62,16 +61,16 @@ for i in range(n_sigs):
         input_sig = next(iter(dataloader))
         torchaudio.save("x_inp{i+1}.wav", input_sig.squeeze(0).cpu(), sample_rate)
 
-        x_i = torch.randn(input_sig.shape, device=device) * sigma_max
-        y = torch.clip(input_sig, -threshold, threshold).to(device).requires_grad_(True)
+        x_i = torch.randn(input_sig.shape, device=device) * sigma_max  # Noisy signal at step T
+        y = torch.clip(input_sig, -threshold, threshold).to(device).requires_grad_(True)  # Clipped signal
 
         for step in range(n_steps):
-               c_skip, c_out, c_in, c_noise = get_preconditioning(t[step])
+               c_skip, c_out, c_in, c_noise = get_preconditioning(t[step])  # Scaling parameters
                x_i = x_i.requires_grad_()
                x_den = c_skip * x_i + c_out * model((c_in * x_i).to(torch.float32), c_noise.to(torch.float32)).to(x_i.dtype)  # Get tweedie
                x_den = model.CQTransform.apply_hpf_DC(x_den)
                score_unc = (x_den - x_i) / (t[step]**2)  # Calculate score
-               likelihood_score, _ = get_likelihood_score(y=y, x_den=x_den, x=x_i, t=t[step], threshold=threshold)
+               likelihood_score, _ = get_likelihood_score(y=y, x_den=x_den, x=x_i, t=t[step], threshold=threshold) # Reconstruction guidance
                d = score_unc + likelihood_score
                ode_integrant = d * -t[step]
                x_i = x_i + (t[step+1] - t[step]) * ode_integrant # Euler step
