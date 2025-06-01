@@ -82,6 +82,7 @@ for i in range(n_sigs):
                print(f"Step: {step+1}, dt {t[step+1] - t[step]},"
                      f"t, {t[step].numpy()}, norm: {torch.norm(x_i - x_den).item()}")
 
+        # Export and visualize reconstructed signal
         cb.export_audio(x_hat=x_den, sample_rate=sample_rate, i=i, threshold=threshold)
         cb.export_waveform(x_hat=x_den, sample_rate=sample_rate, i=i, threshold=threshold)
         cb.export_spectrogram(x_hat=x_den, sample_rate=sample_rate, i=i, threshold=threshold)
