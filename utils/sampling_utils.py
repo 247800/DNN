@@ -27,7 +27,7 @@ def get_likelihood_score(y, x_den, x, t, threshold):
     loss.backward(retain_graph=False)
     rec_grads = x.grad
     normguide = torch.norm(rec_grads) / ((x.shape[0] * x.shape[-1]) ** 0.5)
-    zeta = 0.35
+    zeta = 0.2
     zeta_hat = zeta / (normguide + 1e-8)
     return (-zeta_hat * rec_grads / t).detach(), rec
 
